@@ -10,11 +10,12 @@ const ForecastList = (props) => {
 
   return (
     <div className="forecast-list">
-      {props.forecastList.map(item => {
+      {props.forecastList.map(weatherObject => {
         return (
           <ForecastListItem
-            key={ item.day }
-            forecastInfo={ item }
+            key={ weatherObject.id }
+            onDaySelect={ props.onDaySelect }
+            weatherObject={ weatherObject }
           />
         );
       })}

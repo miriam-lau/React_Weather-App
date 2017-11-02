@@ -1,4 +1,4 @@
-html {
+html, ul, li, h2, div, section {
   margin: 0;
   border: 0;
   padding: 0;
@@ -7,6 +7,7 @@ html {
   text-decoration: inherit;
   color: inherit;
   background: transparent;
+  list-style: none;
 }
 
 .application-container {
@@ -14,26 +15,57 @@ html {
   flex-direction: column;
   align-items: center;
   font-family: 'Roboto', sans-serif;
-  margin: 30px;
-}
+  width: 100%;
+;}
 
 .search-bar {
+}
+
+.forecast-container {
+  width: 100%;
+}
+
+.cityName {
+  font-size: 24px;
+  padding: 10px;
+  background-color: #99d6ff;
+  border-bottom: 4px solid #0099ff;
+}
+
+.forecast-info-container {
+  display: flex;
+  border-left: 2px solid #808080;
+  border-bottom: 2px solid #808080;
+  border-right: 2px solid #808080;
+}
+
+h2 {
+  font-size: 20px;
+  padding: 10px;
+}
+
+.forecast-summary {
+  flex: 2;
+  padding: 20px;
+  width: 100%;
+  background-color: #ccebff;
 }
 
 .forecast-list {
   display: flex;
   text-align: center;
-  border: 2px solid black;
+  border: 2px solid #0099ff;
   width: 100%;
   height: 300px;
-  margin-bottom: 30px;
 }
 
 .forecast-list-item {
   flex: 1;
   display: flex;
   flex-direction: column;
-  border-right: 2px solid black;
+  border-right: 2px solid #0099ff;
+  background-color: white;
+  padding: 30px 10px;
   cursor: pointer;
   transition: 0.3s;
 }
@@ -43,15 +75,75 @@ html {
 }
 
 .forecast-list-item:hover {
-  background-color: #f2f2f2;
+  background-color: #e6f5ff;
   cursor: pointer;
   transition: 0.3s;
 }
 
 .forecast-image {
-  
+  margin: 20px 0;
+}
+
+.forecast-list-item-img {
+  min-height: 80px;
+}
+
+.forecast-description {
+  margin-bottom: 40px;
+}
+
+.forecast-detail-container {
+  flex: 1;
+  text-align: center;
+  font-size: 18px;
+  background-color: white;
+}
+
+.forecast-detail-container > section {
+  padding: 10px 0 20px 0;
+}
+
+.forecast-detail-date {
+  padding: 30px 0;
+}
+
+.forecast-detail-date > section {
+  padding-bottom: 10px;
 }
 
 .forecast-detail {
-  font-size: 40px;
+  display: flex;
+  flex-direction: row;
+  width: 100%;
+  font-size: 16px;
+  background-color: white;
+}
+
+.forecast-detail-panel > section {
+  padding-bottom: 10px;
+}
+
+.forecast-detail-panel {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.forecast-detail-img {
+  min-height: 100px;
+}
+
+.forecast-detail-list {
+  padding-left: 40px;
+  text-align: left;
+}
+
+.forecast-detail-list > li {
+  padding-bottom: 15px;
+}
+
+.forecast-detail-list >li:last-child {
+  padding: 0;
 }
