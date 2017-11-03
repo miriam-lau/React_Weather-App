@@ -1,26 +1,19 @@
-import React, { Component } from 'react';
-import { convertTemp, renderWeekday } from '../utils';
+import React from 'react';
 
-class ForecastListItem extends Component {
-  render() {
-    let info = this.props.weatherObject;
-    let weekday = renderWeekday(info.date);
-    let image = `/images/${info.imageId}.png`;
+const ForecastListItem = (props) => {
+  let info = props.weatherObject;
+  let image = `/images/${info.imageId}.png`;
 
-    return (
-      <div className="forecast-list-item" onClick={ () => this.props.onDaySelect(this.props.weatherObject) }>
-        <section>{ weekday }</section>
-        <div className="forecast-image">
-          <img className="forecast-list-item-img" src={ image } alt={info.group}/>
-        </div>
-        <section className="forecast-description">{ info.description }</section>
-        <section>
-          <span>{ convertTemp(info.highTemp, 'F') } &deg;F /&nbsp;
-            { convertTemp(info.lowTemp, 'F') } &deg;F</span>
-        </section>
+  return (
+    <div className="forecast-list-item" onClick={ () => props.onDaySelect(info) }>
+      <article>{ info.weekday }</article>
+      <div className="forecast-image">
+        <img className="forecast-list-item-img" src={ image } alt={info.group}/>
       </div>
-    );
-  }
+      <article>{ info.description }</article>
+      <article>{ info.highTemp } &deg;F /&nbsp;{ info.lowTemp } &deg;F</article>
+    </div>
+  );
 }
 
 export default ForecastListItem;

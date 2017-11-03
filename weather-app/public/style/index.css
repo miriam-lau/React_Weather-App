@@ -1,4 +1,4 @@
-html, ul, li, h2, div, section {
+html, body, ul, li, h2, div, section, input {
   margin: 0;
   border: 0;
   padding: 0;
@@ -16,9 +16,50 @@ html, ul, li, h2, div, section {
   align-items: center;
   font-family: 'Roboto', sans-serif;
   width: 100%;
-;}
+}
+
+header {
+  display: flex;
+  align-items: center;
+  width: 100%;
+}
+
+.weather-icon-container {
+  padding: 0 15px;
+}
+
+.weather-icon {
+  max-width: 50px;
+  height: auto;
+}
 
 .search-bar {
+  padding: 20px 50px 20px 50px;
+}
+
+input {
+  border: 1px solid #C0C0C0;
+  border-radius: 3px;
+  width: 300px;
+  height: 30px;
+}
+
+.temperature-button-container {
+  display: flex;
+}
+
+.temperature-button {
+  border: 1px solid #C0C0C0;
+  padding: 7px 13px 7px 10px;
+  background-color: #CCEBFF;
+  border-radius: 3px;
+  cursor: pointer;
+  transition: 0.3s;
+  margin: 5px;
+}
+
+.temperature-button:hover {
+  background-color: #99D6FF;
 }
 
 .forecast-container {
@@ -26,56 +67,63 @@ html, ul, li, h2, div, section {
 }
 
 .cityName {
-  font-size: 24px;
-  padding: 10px;
-  background-color: #99d6ff;
-  border-bottom: 4px solid #0099ff;
+  font-size: 20px;
+  padding: 10px 0 5px 10px;
+  background-color: #99D6FF;
+  border-bottom: 4px solid #0099FF;
 }
 
 .forecast-info-container {
   display: flex;
-  border-left: 2px solid #808080;
-  border-bottom: 2px solid #808080;
-  border-right: 2px solid #808080;
+  border-bottom: 2px solid #C0C0C0;
 }
 
 h2 {
   font-size: 20px;
-  padding: 10px;
+  padding: 0 0 10px 5px;
 }
 
 .forecast-summary {
-  flex: 2;
+  flex: 3;
   padding: 20px;
   width: 100%;
-  background-color: #ccebff;
+  background-color: #CCEBFF;
 }
 
 .forecast-list {
   display: flex;
   text-align: center;
-  border: 2px solid #0099ff;
-  width: 100%;
-  height: 300px;
 }
 
 .forecast-list-item {
   flex: 1;
   display: flex;
   flex-direction: column;
-  border-right: 2px solid #0099ff;
+  border-right: 2px solid #0099FF;
+  border-top: 2px solid #0099FF;
+  border-bottom: 2px solid #0099FF;
   background-color: white;
   padding: 30px 10px;
   cursor: pointer;
   transition: 0.3s;
 }
 
-.forecast-list-item:last-child {
-  border-right: none;
+.forecast-list-item > article {
+  margin-bottom: 30px;
+  font-size: 14px;
+}
+
+.forecast-list-item > article:first-child, .forecast-list-item > article:last-child {
+  font-size: 16px;
+  margin-bottom: 0;
+}
+
+.forecast-list-item:first-child {
+  border-left: 2px solid #0099FF;
 }
 
 .forecast-list-item:hover {
-  background-color: #e6f5ff;
+  background-color: #E6F5FF;
   cursor: pointer;
   transition: 0.3s;
 }
@@ -88,62 +136,59 @@ h2 {
   min-height: 80px;
 }
 
-.forecast-description {
-  margin-bottom: 40px;
-}
 
-.forecast-detail-container {
+/* forecast detail component */
+.forecast-detail {
   flex: 1;
   text-align: center;
-  font-size: 18px;
   background-color: white;
-}
-
-.forecast-detail-container > section {
-  padding: 10px 0 20px 0;
+  padding: 30px;
 }
 
 .forecast-detail-date {
-  padding: 30px 0;
+  font-size: 20px;
+  padding-bottom: 15px;
 }
 
-.forecast-detail-date > section {
+.forecast-detail-date > article, .forecast-detail-left-panel > article {
   padding-bottom: 10px;
 }
 
-.forecast-detail {
+.forecast-detail-panel-container {
   display: flex;
   flex-direction: row;
   width: 100%;
-  font-size: 16px;
   background-color: white;
+  justify-content: space-between;
 }
 
-.forecast-detail-panel > section {
-  padding-bottom: 10px;
-}
-
-.forecast-detail-panel {
-  flex: 1;
+.forecast-detail-left-panel {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
+  font-size: 16px;
+  padding-right: 30px;
+}
+
+.forecast-detail-left-panel > article:last-child {
+  padding-bottom: 0;
 }
 
 .forecast-detail-img {
   min-height: 100px;
 }
 
-.forecast-detail-list {
-  padding-left: 40px;
+.forecast-detail-right-panel {
+  margin-top: 30px;
+  font-size: 14px;
   text-align: left;
 }
 
-.forecast-detail-list > li {
+.forecast-detail-right-panel > ul > li {
   padding-bottom: 15px;
 }
 
-.forecast-detail-list >li:last-child {
+.forecast-detail-right-panel > ul > li:last-child {
   padding: 0;
 }

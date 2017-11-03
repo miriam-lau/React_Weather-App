@@ -4,12 +4,12 @@ class SearchBar extends Component {
   constructor(props) {
     super(props)
 
-    this.state = { city: "" };
+    this.state = { cityName: "" };
   }
 
   onInputChange(cityName) {
-    this.setState({ city: cityName });
-    this.props.onSearchCityChange("sunnyvale, ca");
+    this.setState({ cityName: cityName });
+    this.props.onSearchCityChange({ cityName });
   }
 
   render() {

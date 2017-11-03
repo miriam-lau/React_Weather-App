@@ -4,7 +4,7 @@ export const WEEKDAYS = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday",
 export const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug",
     "Sep", "Oct", "Nov", "Dec"];
 
-export const TempUnit = {
-  ONE: 'C',
-  TWO: 'F'
+export const TEMP_UNIT = {
+  CELSIUS: 'C',
+  FAHRENHEIT: 'F'
 }
