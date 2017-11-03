@@ -24,13 +24,10 @@ header {
   width: 100%;
 }
 
-.weather-icon-container {
-  padding: 0 15px;
-}
-
 .weather-icon {
   max-width: 50px;
   height: auto;
+  padding: 0 15px;
 }
 
 .search-bar-container {
@@ -40,16 +37,12 @@ header {
   font-size: 15px;
 }
 
-.search-bar {
-  padding-left: 15px;
-  margin-top: 2px;
-}
-
 input {
   border: 1px solid #C0C0C0;
   border-radius: 3px;
   width: 300px;
   height: 30px;
+  margin: 2px 0 0 15px;
 }
 
 .temperature-button-container {

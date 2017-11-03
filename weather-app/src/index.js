@@ -8,7 +8,7 @@ import ForecastDetail from './components/forecast_detail';
 import TemperatureButton from './components/temperature_button';
 import { TEMP_UNIT, MONTHS, WEEKDAYS } from './constants';
 
-const API_KEY = "01355dbba826da379de73108f1639cc8";
+const API_KEY = "7bdc76a23dde6b78698183d3a8bf49ec";
 
 
 // UTC to user local time
@@ -17,15 +17,53 @@ class App extends Component {
     super(props)
 
     this.state = {
+      weatherData: null,
       forecastList: [],
       selectedDay: null,
-      cityName: "san francisco, ca",
+      city: "",
       tempUnit: TEMP_UNIT.FAHRENHEIT,
     };
   }
 
+  /*
+    Mount component with default data upon page load. 'moment' gets client
+    browser location, and the location is passed to the fetchForecast function.
+  */
   componentWillMount() {
-    this.fetchForecast("san francisco, ca");
+    if (!navigator.geolocation) {
+      console.log("Geolocation is not supported by this browser.");
+      let moment = require('moment-timezone');
+      let currentTimeZone = moment.tz.guess();
+
+      let defaultLocation = currentTimeZone.split('/');
+      let defaultCityChars = defaultLocation[1].split("");
+
+      let defaultCity = "";
+      for (let i = 0; i < defaultCityChars.length; i++) {
+        if (defaultCityChars[i] === '_') {
+          defaultCity += " ";
+          continue;
+        }
+        defaultCity += defaultCityChars[i];
+      }
+
+      let weatherRequestURL = this.getWeatherRequestURL(
+          `${defaultCity}, ${defaultLocation[0]}`);
+      this.fetchForecast(weatherRequestURL);
+
+    } else {
+      navigator.geolocation.getCurrentPosition((position) => {
+        let clientLocationLatitude = position.coords.latitude;
+        let clientLocationLongtitude = position.coords.longitude;
+
+        let city = "sunnyvale, ca";
+        let newrequest = `http://api.openweathermap.org/data/2.5/forecast?q=${city},us&appid=${API_KEY}`
+
+        let weatherRequestURL = `http://api.openweathermap.org/data/2.5/forecast?lat=${clientLocationLatitude}&lon=${clientLocationLongtitude}&appid=${API_KEY}`;
+        this.fetchForecast(weatherRequestURL);
+        // this.fetchForecast(newrequest);
+      });
+    }
   }
 
   /*
@@ -81,19 +119,14 @@ class App extends Component {
     @param {string} description
     return {string}
   */
-  formatDescription(str) {
-    let resultArr = [];
-    let splitStr = str.split(" ");
+  capitalizeFirstLetters(words) {
+    let result = [];
 
-    if (splitStr.length < 1) {
-      return;
+    for (let i = 0; i < words.length; i++) {
+      let currentFirstChar = words[i].charAt(0).toUpperCase();
+      result.push(currentFirstChar + words[i].slice(1));
     }
-
-    for (let i = 0; i < splitStr.length; i++) {
-      let currentFirstChar = splitStr[i].charAt(0).toUpperCase();
-      resultArr.push(currentFirstChar + splitStr[i].slice(1));
-    }
-    return resultArr.join(" ");
+    return result.join(" ");
   }
 
   /*
@@ -101,24 +134,15 @@ class App extends Component {
     @param {string} city, state
     return {string}
   */
-  formatCityName(str) {
-    let resultArr = [];
-    console.log("CITYNAME", str);
-    let splitStr = str.split(" ");
+  formatCityName(location) {
+    let words = location.split(" ");
 
-    if (splitStr.length < 2) {
-      return;
-    }
+    let city = words.slice(0, (words.length - 1));
+    let formattedCity = this.capitalizeFirstLetters(city);
 
-    for (let i = 0; i < (splitStr.length - 1); i++) {
-      let cityFirstLetter = splitStr[i].charAt(0).toUpperCase();
-      resultArr.push(cityFirstLetter + splitStr[i].slice(1));
-    }
+    let country = words[(words.length - 1)].toUpperCase();
 
-    let state = splitStr[(splitStr.length - 1)].toUpperCase();
-    resultArr.push(state);
-
-    return resultArr.join(" ");
+    return `${formattedCity} ${country}`;
   }
 
   /*
@@ -134,7 +158,13 @@ class App extends Component {
       let currentDay = weatherData[i];
       let currentDaySummary = currentDay.weather[0];
 
-      let description = this.formatDescription(currentDaySummary.description);
+      let description = currentDaySummary.description;
+      let formattedDescription = "";
+      if (description !== "") {
+        let descriptionWords = currentDaySummary.description.split(" ");
+        formattedDescription = this.capitalizeFirstLetters(descriptionWords);
+      }
+
       let date = new Date(currentDay.dt_txt);
       let formattedDate = this.formatDate(date);
       let weekday = this.getWeekday(date);
@@ -148,7 +178,7 @@ class App extends Component {
         dateStr: formattedDate,
         weekday: weekday,
         group: currentDaySummary.main,
-        description: description,
+        description: formattedDescription,
         currentTemp: currentTemp,
         highTemp: highTemp,
         lowTemp: lowTemp,
@@ -160,8 +190,19 @@ class App extends Component {
 
       forecastList.push(newCurrentDay);
     }
-
     return forecastList;
+  }
+
+  /*
+  Updates state and passes weather data to convertToForecastList function
+  but not save all the data?
+  @param {char} 'F' or 'C'
+  return {null}
+  */
+  handleTempUnitChange(unit) {
+    this.setState({ tempUnit: unit });
+    this.convertToForecastList(this.state.weatherData);
+    return null;
   }
 
   /*
@@ -169,11 +210,7 @@ class App extends Component {
     @param {string} city, state
     return {null}
   */
-  fetchForecast(cityName) {
-    this.setState({ cityName });
-    let weatherURLRequest = `http://api.openweathermap.org/data/2.5/forecast?q=
-        ${cityName},us&appid=${API_KEY}`;
-
+  fetchForecast(weatherURLRequest) {
     fetch(weatherURLRequest).then(response => {
       if (response.status !== 200) {
         console.log("RESPONSE ERROR", response.status);
@@ -183,8 +220,10 @@ class App extends Component {
         console.log("DATA", data);
         let forecastList = this.convertToForecastList(data.list);
         this.setState({
+          weatherData: data.list,
           forecastList: forecastList,
-          selectedDay: forecastList[0]
+          selectedDay: forecastList[0],
+          city: `${data.city.name}, ${data.city.country}`
         });
       });
     }).catch(err => {
@@ -192,32 +231,21 @@ class App extends Component {
     });
   }
 
-  /*
-    Updates state and re-fetches the data  // way to not have to re-fetch data
-    but not save all the data?
-    @param {char} 'F' or 'C'
-    return {null}
-  */
-  handleTempUnitChange(unit) {
-    this.setState({ tempUnit: unit });
-    this.fetchForecast(this.state.cityName);
-    return null;
+  getWeatherRequestURL(city) {
+    return (`http://api.openweathermap.org/data/2.5/forecast?q=${city},us&appid=${API_KEY}`);
   }
 
   render() {
     return (
       <div className="application-container">
         <header>
-          <section className="weather-icon-container">
-            <img
-              className="weather-icon"
+          <img className="weather-icon"
               src="/weather_favicon.png"
-              alt="weather-icon"/>
-          </section>
+              alt="weather-icon" />
           <section className="search-bar-container">
             <article>Enter a City:</article>
             <SearchBar
-              onSearchCityChange={ cityName => this.fetchForecast(cityName) }/>
+              onSearchCityChange={ city => this.fetchForecast(this.getWeatherRequestURL(city)) }/>
           </section>
           <TemperatureButton
             currentTempUnit={ this.state.tempUnit }
@@ -226,7 +254,7 @@ class App extends Component {
 
         <main className="forecast-container">
           <div className="cityName">
-              Weather for { this.formatCityName(this.state.cityName) }
+              Weather for { this.formatCityName(this.state.city) }
           </div>
           <div className="forecast-info-container">
             <ForecastDetail
