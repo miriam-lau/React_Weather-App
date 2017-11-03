@@ -103,6 +103,7 @@ class App extends Component {
   */
   formatCityName(str) {
     let resultArr = [];
+    console.log("CITYNAME", str);
     let splitStr = str.split(" ");
 
     if (splitStr.length < 2) {
@@ -213,8 +214,11 @@ class App extends Component {
               src="/weather_favicon.png"
               alt="weather-icon"/>
           </section>
-          <SearchBar
-            onSearchCityChange={ cityName => this.fetchForecast(cityName) }/>
+          <section className="search-bar-container">
+            <article>Enter a City:</article>
+            <SearchBar
+              onSearchCityChange={ cityName => this.fetchForecast(cityName) }/>
+          </section>
           <TemperatureButton
             currentTempUnit={ this.state.tempUnit }
             onTempUnitChange={ unit => this.handleTempUnitChange(unit) }/>
