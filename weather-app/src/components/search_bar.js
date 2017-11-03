@@ -1,5 +1,7 @@
 import React, { Component } from 'react';
 
+// search bar should be on submit for call
+// search bar needs city name as well for letters typed but not submitted
 class SearchBar extends Component {
   constructor(props) {
     super(props)

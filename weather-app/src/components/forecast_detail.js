@@ -41,7 +41,7 @@ class ForecastDetail extends Component {
   }
 
   render() {
-    let info = this.props.selectedWeatherObject;
+    let info = this.props.selectedWeather;
 
     if (info === null) {
       return <div>Loading...</div>
@@ -60,12 +60,12 @@ class ForecastDetail extends Component {
             <img className="forecast-detail-img" src={ image } alt={info.group}/>
             <article>{ info.description }</article>
             <article>Current Temperature</article>
-            <article>{ info.currentTemp } &deg;F</article>
+            <article>{ info.currentTemp } &deg;{ this.props.tempUnit }</article>
           </section>
           <section className="forecast-detail-right-panel">
             <ul>
-              <li>Highs: { info.highTemp } &deg;F</li>
-              <li>Lows: { info.lowTemp } &deg;F</li>
+              <li>Highs: { info.highTemp } &deg;{ this.props.tempUnit }</li>
+              <li>Lows: { info.lowTemp } &deg;{ this.props.tempUnit }</li>
               <li>Humidity: { info.humidity }&#37;</li>
               <li>Wind Speed: { info.windSpeed } m/s</li>
               <li>Wind Direction: { this.getWindDirection(info.windDegrees) }</li>

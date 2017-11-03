@@ -2,7 +2,9 @@ import React from 'react';
 import { TEMP_UNIT } from '../constants';
 
 const TemperatureButton = (props) => {
-  let newTemp = (TEMP_UNIT.FAHRENHEIT === 'F') ?
+  let currentTempUnit = props.currentTempUnit;
+
+  let newTemp = (currentTempUnit === TEMP_UNIT.FAHRENHEIT) ?
     TEMP_UNIT.CELSIUS : TEMP_UNIT.FAHRENHEIT;
 
   return (

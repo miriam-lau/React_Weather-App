@@ -1,7 +1,7 @@
 import React from 'react';
 
 const ForecastListItem = (props) => {
-  let info = props.weatherObject;
+  let info = props.weather;
   let image = `/images/${info.imageId}.png`;
 
   return (
@@ -11,7 +11,9 @@ const ForecastListItem = (props) => {
         <img className="forecast-list-item-img" src={ image } alt={info.group}/>
       </div>
       <article>{ info.description }</article>
-      <article>{ info.highTemp } &deg;F /&nbsp;{ info.lowTemp } &deg;F</article>
+      <article>{ info.highTemp } &deg;{ props.tempUnit } /&nbsp;
+          { info.lowTemp } &deg;{ props.tempUnit }
+      </article>
     </div>
   );
 }

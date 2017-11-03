@@ -11,11 +11,7 @@ import { TEMP_UNIT, MONTHS, WEEKDAYS } from './constants';
 const API_KEY = "01355dbba826da379de73108f1639cc8";
 
 
-//button to toggle between C and F.
-// default data to start
 // UTC to user local time
-// search bar should be on submit for call
-// search bar needs city name as well for letters typed but not submitted
 class App extends Component {
   constructor(props) {
     super(props)
@@ -195,9 +191,16 @@ class App extends Component {
     });
   }
 
+  /*
+    Updates state and re-fetches the data  // way to not have to re-fetch data
+    but not save all the data?
+    @param {char} 'F' or 'C'
+    return {null}
+  */
   handleTempUnitChange(unit) {
-    console.log("HANDLE TEMP UNIT", unit);
     this.setState({ tempUnit: unit });
+    this.fetchForecast(this.state.cityName);
+    return null;
   }
 
   render() {
@@ -213,6 +216,7 @@ class App extends Component {
           <SearchBar
             onSearchCityChange={ cityName => this.fetchForecast(cityName) }/>
           <TemperatureButton
+            currentTempUnit={ this.state.tempUnit }
             onTempUnitChange={ unit => this.handleTempUnitChange(unit) }/>
         </header>
 
@@ -221,11 +225,14 @@ class App extends Component {
               Weather for { this.formatCityName(this.state.cityName) }
           </div>
           <div className="forecast-info-container">
-            <ForecastDetail selectedWeatherObject={ this.state.selectedDay }/>
+            <ForecastDetail
+              tempUnit={ this.state.tempUnit }
+              selectedWeather={ this.state.selectedDay }/>
             <section className="forecast-summary">
               <h2>5-Day Forecast</h2>
               <ForecastList
                 forecastList={ this.state.forecastList }
+                tempUnit={ this.state.tempUnit }
                 onDaySelect={ selectedDay => this.setState({ selectedDay }) }
               />
             </section>
