@@ -139,6 +139,13 @@ h2 {
 
 
 /* forecast detail component */
+.forecast-detail-loading {
+  text-align: center;
+  padding-top: 30px;
+  min-width: 388px;
+  max-width: 388px;
+}
+
 .forecast-detail {
   flex: 1;
   text-align: center;

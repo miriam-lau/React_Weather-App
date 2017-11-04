@@ -1,5 +1,13 @@
 import React from 'react';
 
+/*
+  Returns a ForecastListItem.
+  @param {int} key is a unique weather id
+  @param {char} temperature unit, either 'F' or 'C'
+  @param {object} weather object
+  @param {function} onDaySelect function, on click passes the weather object to
+    the onDaySelect function.
+*/
 const ForecastListItem = (props) => {
   let info = props.weather;
   let image = `/images/${info.imageId}.png`;

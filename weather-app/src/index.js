@@ -6,9 +6,15 @@ import SearchBar from './components/search_bar';
 import ForecastList from './components/forecast_list';
 import ForecastDetail from './components/forecast_detail';
 import TemperatureButton from './components/temperature_button';
-import { TEMP_UNIT, MONTHS, WEEKDAYS } from './constants';
+import { TEMP_UNIT } from './constants';
 
 const API_KEY = "7bdc76a23dde6b78698183d3a8bf49ec";
+const API_KEY2 = "41724c44a2967f32ad9b4f080620c0fb";
+const FIVE = 5;
+const WEEKDAYS = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday",
+    "Friday", "Saturday"];
+const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug",
+    "Sep", "Oct", "Nov", "Dec"];
 
 
 // UTC to user local time
@@ -50,18 +56,13 @@ class App extends Component {
       let weatherRequestURL = this.getWeatherRequestURL(
           `${defaultCity}, ${defaultLocation[0]}`);
       this.fetchForecast(weatherRequestURL);
-
     } else {
       navigator.geolocation.getCurrentPosition((position) => {
-        let clientLocationLatitude = position.coords.latitude;
-        let clientLocationLongtitude = position.coords.longitude;
+        let clientLatitude = position.coords.latitude;
+        let clientLongtitude = position.coords.longitude;
 
-        let city = "sunnyvale, ca";
-        let newrequest = `http://api.openweathermap.org/data/2.5/forecast?q=${city},us&appid=${API_KEY}`
-
-        let weatherRequestURL = `http://api.openweathermap.org/data/2.5/forecast?lat=${clientLocationLatitude}&lon=${clientLocationLongtitude}&appid=${API_KEY}`;
+        let weatherRequestURL = `http://api.openweathermap.org/data/2.5/forecast?lat=${clientLatitude}&lon=${clientLongtitude}&appid=${API_KEY}`;
         this.fetchForecast(weatherRequestURL);
-        // this.fetchForecast(newrequest);
       });
     }
   }
@@ -148,48 +149,52 @@ class App extends Component {
   /*
     Parse weather data response to objects for forecast list.
     @param {object{object}} weather data
-    @param {string} temperature unit, default to 'F' if no char is passed in
     return {array} an array of weather objects
   */
   convertToForecastList(weatherData) {
     let forecastList = [];
-    // james: make the 6 a constant.
-    for (let i = 0; i < 6; i++) {
-      let currentDay = weatherData[i];
-      let currentDaySummary = currentDay.weather[0];
-
-      let description = currentDaySummary.description;
-      let formattedDescription = "";
-      if (description !== "") {
-        let descriptionWords = currentDaySummary.description.split(" ");
-        formattedDescription = this.capitalizeFirstLetters(descriptionWords);
+    let dayToAddToForecastList = new Date(weatherData[0].dt_txt).getDate();
+    for (let i = 0; i < weatherData.length; i++) {
+      if (forecastList.length === FIVE) {
+        break;
       }
 
-      let date = new Date(currentDay.dt_txt);
-      let formattedDate = this.formatDate(date);
-      let weekday = this.getWeekday(date);
-      let currentTemp = this.convertTemp(currentDay.main.temp, this.state.tempUnit);
-      let highTemp = this.convertTemp(currentDay.main.temp_max, this.state.tempUnit);
-      let lowTemp = this.convertTemp(currentDay.main.temp_min, this.state.tempUnit);
+      let currentWeather = weatherData[i];
+      let currentWeatherDay = new Date(currentWeather.dt_txt);
+      if (currentWeatherDay.getDate() !== dayToAddToForecastList) {
+        continue;
+      }
 
-      let newCurrentDay = {
-        id: currentDay.dt,
-        date: date,
+      let description = currentWeather.weather[0].description;
+      let formattedDescription = (description === "" ?
+          "" : this.capitalizeFirstLetters(description.split(" ")));
+
+      let formattedDate = this.formatDate(currentWeatherDay);
+      let weekday = this.getWeekday(currentWeatherDay);
+      let currentTemp = this.convertTemp(currentWeather.main.temp);
+      let highTemp = this.convertTemp(currentWeather.main.temp_max);
+      let lowTemp = this.convertTemp(currentWeather.main.temp_min);
+
+      let newCurrentWeather = {
+        id: currentWeather.dt,
+        date: currentWeatherDay,
         dateStr: formattedDate,
         weekday: weekday,
-        group: currentDaySummary.main,
+        group: currentWeather.weather[0].main,
         description: formattedDescription,
         currentTemp: currentTemp,
         highTemp: highTemp,
         lowTemp: lowTemp,
-        humidity: currentDay.main.humidity,
-        imageId: currentDaySummary.icon,
-        windSpeed: currentDay.wind.speed, // wind speed is in meters per sec
-        windDegrees: currentDay.wind.deg
+        humidity: currentWeather.main.humidity,
+        imageId: currentWeather.weather[0].icon,
+        windSpeed: currentWeather.wind.speed, // wind speed is in meters per sec
+        windDegrees: currentWeather.wind.deg
       }
 
-      forecastList.push(newCurrentDay);
+      forecastList.push(newCurrentWeather);
+      dayToAddToForecastList += 1;
     }
+
     return forecastList;
   }
 
@@ -200,8 +205,18 @@ class App extends Component {
   return {null}
   */
   handleTempUnitChange(unit) {
-    this.setState({ tempUnit: unit });
-    this.convertToForecastList(this.state.weatherData);
+    this.setState({ tempUnit: unit }, () => {
+      this.setState({ forecastList: this.convertToForecastList(this.state.weatherData) },
+        () => {
+          let forecastList = this.state.forecastList;
+          for (let i = 0; i < forecastList.length; i++) {
+            if (forecastList[i].id === this.state.selectedDay.id) {
+              this.setState({ selectedDay: forecastList[i] });
+            }
+          }
+        }
+      );
+    });
     return null;
   }
 
@@ -232,7 +247,9 @@ class App extends Component {
   }
 
   getWeatherRequestURL(city) {
-    return (`http://api.openweathermap.org/data/2.5/forecast?q=${city},us&appid=${API_KEY}`);
+    return (
+      `http://api.openweathermap.org/data/2.5/forecast?q=${city},us&appid=${API_KEY}`
+    );
   }
 
   render() {
@@ -245,7 +262,9 @@ class App extends Component {
           <section className="search-bar-container">
             <article>Enter a City:</article>
             <SearchBar
-              onSearchCityChange={ city => this.fetchForecast(this.getWeatherRequestURL(city)) }/>
+                onSearchCityChange={ city => {
+                  this.fetchForecast(this.getWeatherRequestURL(city))
+                }} />
           </section>
           <TemperatureButton
             currentTempUnit={ this.state.tempUnit }

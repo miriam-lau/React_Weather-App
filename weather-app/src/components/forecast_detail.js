@@ -44,7 +44,7 @@ class ForecastDetail extends Component {
     let info = this.props.selectedWeather;
 
     if (info === null) {
-      return <div>Loading...</div>
+      return <div className="forecast-detail-loading">Loading...</div>
     }
 
     let image = `/images/${info.imageId}.png`;
