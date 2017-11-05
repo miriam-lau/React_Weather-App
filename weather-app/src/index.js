@@ -10,7 +10,7 @@ import { TEMP_UNIT } from './constants';
 
 /**
 */
-const API_KEY = ["7bdc76a23dde6b78698183d3a8bf49ec",
+const API_KEYS = ["7bdc76a23dde6b78698183d3a8bf49ec",
     "41724c44a2967f32ad9b4f080620c0fb"];
 
 /**
@@ -37,10 +37,8 @@ class App extends Component {
     };
   }
 
-  /*
-    Mount component with default data upon page load. If geolocation is not
-      supported, 'moment' gets client timezone. The location is passed to the
-      fetchForecast function.
+  /**
+    Mount component with default data upon page load.
   */
   componentWillMount() {
     if (!navigator.geolocation) {
@@ -67,16 +65,19 @@ class App extends Component {
       navigator.geolocation.getCurrentPosition((position) => {
         let clientLatitude = position.coords.latitude;
         let clientLongtitude = position.coords.longitude;
-        let useAPI_KEYIndex = this.getAPI_KEYIndex();
+        let useApiKey = this.getRandomApiKey();
 
-        let weatherRequestURL = `http://api.openweathermap.org/data/2.5/forecast?lat=${clientLatitude}&lon=${clientLongtitude}&appid=${API_KEY[useAPI_KEYIndex]}`;
+        let weatherRequestURL = `http://api.openweathermap.org/data/2.5/forecast?lat=${clientLatitude}&lon=${clientLongtitude}&appid=${useApiKey}`;
         this.fetchForecast(weatherRequestURL);
       });
     }
   }
 
-  getAPI_KEYIndex() {
-    return (Math.floor(Math.random() * (2 - 0)) + 0);
+  /**
+  */
+  getRandomApiKey() {
+    let index = Math.floor(Math.random() * (2));
+    return API_KEYS[index];
   }
 
   /*
@@ -265,9 +266,9 @@ class App extends Component {
     @return {string}
   */
   getWeatherRequestURL(city) {
-    let useAPI_KEYIndex = this.getAPI_KEYIndex();
+    let useApiKey = this.getRandomApiKey();
     return (
-      `http://api.openweathermap.org/data/2.5/forecast?q=${city},us&appid=${API_KEY[useAPI_KEYIndex]}`
+      `http://api.openweathermap.org/data/2.5/forecast?q=${city},us&appid=${useApiKey}`
     );
   }
 
