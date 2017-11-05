@@ -1,12 +1,14 @@
 import React from 'react';
 
 /*
-  Returns a ForecastListItem.
-  @param {int} key is a unique weather id
-  @param {char} temperature unit, either 'F' or 'C'
-  @param {object} weather object
-  @param {function} onDaySelect function, on click passes the weather object to
-    the onDaySelect function.
+  Returns a ForecastListItem component.
+  @param {props}:
+    {int key} a unique id for the weather object
+    {char tempUnit} temperature unit, either 'F' or 'C'
+    {object weather} weather object
+    {function onDaySelect} on click passes the weather object to the onDaySelect
+      function from index
+  @return {html element div} ForecastListItem
 */
 const ForecastListItem = (props) => {
   let info = props.weather;

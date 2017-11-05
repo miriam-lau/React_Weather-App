@@ -1,5 +1,8 @@
 import React, { Component } from 'react';
 
+/*
+  List of cardinal directions and their starting degree values.
+*/
 const CARDINAL_DIRECTIONS = [
   ['N', 348.75],
   ['NNE', 11.25],
@@ -21,9 +24,9 @@ const CARDINAL_DIRECTIONS = [
 
 class ForecastDetail extends Component {
   /*
-    Converts the degrees to cardinal direction.
-    @param {float} degrees
-    return {string}
+    Converts the degrees to a cardinal direction.
+    @param {float degrees} wind degrees
+    return {string | null}
   */
   getWindDirection(degrees) {
     for (let i = 0; i < (CARDINAL_DIRECTIONS.length - 1); i++) {

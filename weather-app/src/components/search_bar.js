@@ -8,7 +8,7 @@ class SearchBar extends Component {
   }
 
   /*
-    Passes the city name to the onSearchCityChange function.
+    Passes the city name in state to the onSearchCityChange function.
     @param {event} object
     return {null}
   */

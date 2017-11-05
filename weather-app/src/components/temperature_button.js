@@ -3,9 +3,10 @@ import { TEMP_UNIT } from '../constants';
 
 /*
   Renders either the 'F' or 'C' temperature button.
-  @param {char} the current temperature unit, either 'F' or 'C'
-  @param {function} onTempUnitChange function that passes the unit to the
-    handleTempUnitChange funciton
+  @param {props}
+    {char} the current temperature unit, either 'F' or 'C'
+    {function onTempUnitChange} passes the new temperature unit to the
+      handleTempUnitChange function in index
 */
 const TemperatureButton = (props) => {
   let currentTempUnit = props.currentTempUnit;

@@ -17,27 +17,28 @@ const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug",
     "Sep", "Oct", "Nov", "Dec"];
 
 
-// UTC to user local time
 class App extends Component {
   constructor(props) {
     super(props)
 
     this.state = {
-      weatherData: null,
-      forecastList: [],
-      selectedDay: null,
-      city: "",
-      tempUnit: TEMP_UNIT.FAHRENHEIT,
+      weatherData: null, // {object data} in weather response
+      forecastList: [], // an array of weather objects
+      selectedDay: null, // day selected to display in forecastDetail component
+      city: "", // location for weather data in format "city, country"
+      tempUnit: TEMP_UNIT.FAHRENHEIT, // temp unit to convert temperature to,
+        // either 'F' or 'C'
     };
   }
 
   /*
-    Mount component with default data upon page load. 'moment' gets client
-    browser location, and the location is passed to the fetchForecast function.
+    Mount component with default data upon page load. If geolocation is not
+      supported, 'moment' gets client timezone. The location is passed to the
+      fetchForecast function.
   */
   componentWillMount() {
     if (!navigator.geolocation) {
-      console.log("Geolocation is not supported by this browser.");
+      console.log("GEOLOCATION DISABLED OR NOT SUPPORTED");
       let moment = require('moment-timezone');
       let currentTimeZone = moment.tz.guess();
 
@@ -69,9 +70,8 @@ class App extends Component {
 
   /*
     Converts temperature in Kelvin to either Celsius or Fahrenheit.
-    @param {int} temperature in Kelvin
-    @param {char} 'F' or 'C'
-    return {int}
+    @param {int temp} temperature in Kelvin
+    @return {int | null}
   */
   convertTemp(temp) {
     let tempCelsius = temp - 273.15;
@@ -87,7 +87,7 @@ class App extends Component {
 
   /*
     Takes date object and parses together the month, day and year.
-    @param {date} Date object
+    @param {object date} Date object
     return {string} string with format "month day year"
   */
   formatDate(date) {
@@ -100,15 +100,16 @@ class App extends Component {
 
   /*
     Get the associated weekday for the date.
-    @param {date} Date object
-    return {string} weekday
+    @param {object date} Date object
+    @return {string} weekday
   */
   getWeekday(date) {
     let today = new Date();
+    let todayLocalTime = new Date(`${today} UTC`);
 
-    if (date.getMonth() === today.getMonth() &&
-        date.getDate() === today.getDate() &&
-        date.getFullYear() === today.getFullYear()) {
+    if (date.getMonth() === todayLocalTime.getMonth() &&
+        date.getDate() === todayLocalTime.getDate() &&
+        date.getFullYear() === todayLocalTime.getFullYear()) {
           return "Today";
     }
 
@@ -116,9 +117,9 @@ class App extends Component {
   }
 
   /*
-    Capitalize the first letter of each word in the description string.
-    @param {string} description
-    return {string}
+    Capitalize the first letter of each word in the array.
+    @param {array words} an array of words
+    @return {string}
   */
   capitalizeFirstLetters(words) {
     let result = [];
@@ -132,8 +133,8 @@ class App extends Component {
 
   /*
     Capitalize the first letter of the city and both letters of the state.
-    @param {string} city, state
-    return {string}
+    @param {string location} city, country
+    @return {string} city, country
   */
   formatCityName(location) {
     let words = location.split(" ");
@@ -147,20 +148,21 @@ class App extends Component {
   }
 
   /*
-    Parse weather data response to objects for forecast list.
-    @param {object{object}} weather data
-    return {array} an array of weather objects
+    Convert weather data response into objects for forecast list.
+    @param {object weather} weather data
+    @return {array forecastList{objects weather}} an array of weather objects
   */
   convertToForecastList(weatherData) {
     let forecastList = [];
-    let dayToAddToForecastList = new Date(weatherData[0].dt_txt).getDate();
+
+    let dayToAddToForecastList = new Date(`${weatherData[0].dt_txt} UTC`).getDate();
     for (let i = 0; i < weatherData.length; i++) {
       if (forecastList.length === FIVE) {
         break;
       }
 
       let currentWeather = weatherData[i];
-      let currentWeatherDay = new Date(currentWeather.dt_txt);
+      let currentWeatherDay = new Date(`${currentWeather.dt_txt} UTC`);
       if (currentWeatherDay.getDate() !== dayToAddToForecastList) {
         continue;
       }
@@ -199,10 +201,12 @@ class App extends Component {
   }
 
   /*
-  Updates state and passes weather data to convertToForecastList function
-  but not save all the data?
+  Updates state properties:
+    "tempUnit" with new temperature unit
+    "forecastList" with result from calling convertToForecastList function passing
+      in the weather data
+    "selectedDay" with a new object with the same id in the new forecastList
   @param {char} 'F' or 'C'
-  return {null}
   */
   handleTempUnitChange(unit) {
     this.setState({ tempUnit: unit }, () => {
@@ -217,13 +221,11 @@ class App extends Component {
         }
       );
     });
-    return null;
   }
 
   /*
     API call to fetch weather data
-    @param {string} city, state
-    return {null}
+    @param {string weatherURLRequest} URL request
   */
   fetchForecast(weatherURLRequest) {
     fetch(weatherURLRequest).then(response => {
@@ -246,6 +248,11 @@ class App extends Component {
     });
   }
 
+  /*
+    Creates the url request string.
+    @param {string city} city, country
+    @return {string}
+  */
   getWeatherRequestURL(city) {
     return (
       `http://api.openweathermap.org/data/2.5/forecast?q=${city},us&appid=${API_KEY}`
