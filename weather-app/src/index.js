@@ -8,6 +8,8 @@ import ForecastDetail from './components/forecast_detail';
 import TemperatureButton from './components/temperature_button';
 import { TEMP_UNIT } from './constants';
 
+let moment = require('moment-timezone');
+
 /**
 */
 const API_KEYS = ["7bdc76a23dde6b78698183d3a8bf49ec",
@@ -15,7 +17,7 @@ const API_KEYS = ["7bdc76a23dde6b78698183d3a8bf49ec",
 
 /**
 */
-const FIVE = 5;
+const NUM_DAYS_TO_DISPLAY = 5;
 
 
 class App extends Component {
@@ -23,10 +25,10 @@ class App extends Component {
     super(props)
 
     this.state = {
-      /** {object data} in weather response */
+      /** @type {?object data} in weather response */
       weatherData: null,
-      /** */
-      forecastList: [], // an array of weather objects
+      /** @type {array} weather objects */
+      forecastList: [],
       /** */
       selectedDay: null, // day selected to display in forecastDetail component
       /** */
@@ -43,64 +45,68 @@ class App extends Component {
   componentWillMount() {
     if (!navigator.geolocation) {
       console.log("GEOLOCATION DISABLED OR NOT SUPPORTED");
-      let moment = require('moment-timezone');
       let currentTimeZone = moment.tz.guess();
 
-      let defaultLocation = currentTimeZone.split('/');
-      let defaultCityChars = defaultLocation[1].split("");
+      let clientLocation = currentTimeZone.split('/');
+      let clientLocationCityChars = clientLocation[1].split("");
 
-      let defaultCity = "";
-      for (let i = 0; i < defaultCityChars.length; i++) {
-        if (defaultCityChars[i] === '_') {
-          defaultCity += " ";
+      let clientLocationCity = "";
+      for (let i = 0; i < clientLocationCityChars.length; i++) {
+        if (clientLocationCityChars[i] === '_') {
+          clientLocationCity += " ";
           continue;
         }
-        defaultCity += defaultCityChars[i];
+        clientLocationCity += clientLocationCityChars[i];
       }
 
       let weatherRequestURL = this.getWeatherRequestURL(
-          `${defaultCity}, ${defaultLocation[0]}`);
+        `${clientLocationCity}, ${clientLocation[0]}`);
       this.fetchForecast(weatherRequestURL);
-    } else {
-      navigator.geolocation.getCurrentPosition((position) => {
-        let clientLatitude = position.coords.latitude;
-        let clientLongtitude = position.coords.longitude;
-        let useApiKey = this.getRandomApiKey();
-
-        let weatherRequestURL = `http://api.openweathermap.org/data/2.5/forecast?lat=${clientLatitude}&lon=${clientLongtitude}&appid=${useApiKey}`;
-        this.fetchForecast(weatherRequestURL);
-      });
+      return;
     }
+
+    navigator.geolocation.getCurrentPosition((position) => {
+      let clientLatitude = position.coords.latitude;
+      let clientLongtitude = position.coords.longitude;
+      let ApiKey = this.getRandomApiKey();
+
+      let weatherRequestURL = `http://api.openweathermap.org/data/2.5/` +
+          `forecast?lat=${clientLatitude}&lon=${clientLongtitude}&appid=${ApiKey}`;
+      this.fetchForecast(weatherRequestURL);
+    });
   }
 
   /**
+    * Get the Api Key.
+    * @return {string API_KEYS[index]}
   */
   getRandomApiKey() {
-    let index = Math.floor(Math.random() * (2));
+    let index = Math.floor(Math.random() * 2);
     return API_KEYS[index];
   }
 
-  /*
-    Converts temperature in Kelvin to either Celsius or Fahrenheit.
-    @param {int temp} temperature in Kelvin
-    @return {int | null}
+  /**
+    * Converts temperature in Kelvin to current temperature unit.
+    * @param {int kelvin} temperature in Kelvin.
+    * @param {enum TEMP_UNIT} temperature unit in current state.
+    * @return {?int}
   */
-  convertTemp(temp) {
-    let tempCelsius = temp - 273.15;
-    switch (this.state.tempUnit) {
+  convertKelvinToUnit(kelvin, unit) {
+    let celsiusTemperature = kelvin - 273.15;
+    switch (unit) {
       case TEMP_UNIT.CELSIUS:
-        return Math.round(tempCelsius);
+        return Math.round(celsiusTemperature);
       case TEMP_UNIT.FAHRENHEIT:
-        return Math.round(((tempCelsius * 9) / 5) + 32);
+        return Math.round(((celsiusTemperature * 9) / 5) + 32);
       default:
         return null;
     }
   }
 
-  /*
-    Takes date object and parses together the month, day and year.
-    @param {object date} Date object
-    return {string} string with format "month day year"
+  /**
+    * Takes date object and parses together the month, day and year.
+    * @param {object date} the date
+    * @return {string} the date in format "month day year"
   */
   formatDate(date) {
     let month = date.toLocaleDateString("en-US", { month: "short" });
@@ -110,103 +116,110 @@ class App extends Component {
     return (`${month} ${day}, ${year}`);
   }
 
-  /*
-    Get the associated weekday for the date.
-    @param {object date} Date object
-    @return {string} weekday
+  /**
+    * Get the day of the week.
+    * @param {object date} the date
+    * @return {string} day of week
   */
-  getWeekday(date) {
+  getDayString(date) {
     let today = new Date();
-    let todayLocalTime = new Date(`${today} UTC`);
 
-    if (date.getMonth() === todayLocalTime.getMonth() &&
-        date.getDate() === todayLocalTime.getDate() &&
-        date.getFullYear() === todayLocalTime.getFullYear()) {
+    // get date within JS probably a function for this
+    if (date.getMonth() === today.getMonth() &&
+        date.getDate() === today.getDate() &&
+        date.getFullYear() === today.getFullYear()) {
           return "Today";
     }
 
     return date.toLocaleDateString("en-US", { weekday: "short" });
   }
 
-  /*
-    Capitalize the first letter of each word in the array.
-    @param {array words} an array of words
-    @return {string}
+  /**
+    * Capitalize the first letter of each word in the array.
+    * @param {array words} an array of words
+    * @return {string}
   */
   capitalizeFirstLetters(words) {
     let result = [];
 
     for (let i = 0; i < words.length; i++) {
+      // need to do a check for an "" here because if there is an a double space
+      // it will crash when it does the uppercase for the char at 0.
+      // need to make sure word is at least length 1 here.
       let currentFirstChar = words[i].charAt(0).toUpperCase();
       result.push(currentFirstChar + words[i].slice(1));
     }
     return result.join(" ");
   }
 
-  /*
-    Capitalize the first letter of the city and both letters of the state.
-    @param {string location} city, country
-    @return {string} city, country
+  /**
+    * Capitalize the first letter of the city and both letters of the country.
+    * @param {string location} city, country
+    * @return {string} city, country
   */
-  formatCityName(location) {
+  formatLocationName(location) {
     let words = location.split(" ");
-
     let city = words.slice(0, (words.length - 1));
     let formattedCity = this.capitalizeFirstLetters(city);
-
     let country = words[(words.length - 1)].toUpperCase();
 
     return `${formattedCity} ${country}`;
   }
 
-  /*
-    Convert weather data response into objects for forecast list.
-    @param {object weather} weather data
-    @return {array forecastList{objects weather}} an array of weather objects
+  /**
+    * Convert weather data response into objects for forecast list.
+    * @param {object weather} weather data
+    * @return {array forecastList{objects weather}} an array of weather objects
   */
   convertToForecastList(weatherData) {
     let forecastList = [];
 
-    let dayToAddToForecastList = new Date(`${weatherData[0].dt_txt} UTC`).getDate();
+    let nextDayToAddToForecastList = new Date(`${weatherData[0].dt_txt} UTC`).getDate();
     for (let i = 0; i < weatherData.length; i++) {
-      if (forecastList.length === FIVE) {
+      if (forecastList.length === NUM_DAYS_TO_DISPLAY) {
         break;
       }
 
-      let currentWeather = weatherData[i];
-      let currentWeatherDay = new Date(`${currentWeather.dt_txt} UTC`);
-      if (currentWeatherDay.getDate() !== dayToAddToForecastList) {
+      // should get the weather for the entire day if possible for future days
+      // if not possible then report same time for all future days and display
+      //  the time you chose.
+      let weather = weatherData[i];
+      let weatherDay = new Date(`${weather.dt_txt} UTC`);
+      if (weatherDay.getDate() !== nextDayToAddToForecastList) {
         continue;
       }
 
-      let description = currentWeather.weather[0].description;
-      let formattedDescription = (description === "" ?
-          "" : this.capitalizeFirstLetters(description.split(" ")));
+      let description = weather.weather[0].description;
+      let formattedDescription = this.capitalizeFirstLetters(description.split(" "));
 
-      let formattedDate = this.formatDate(currentWeatherDay);
-      let weekday = this.getWeekday(currentWeatherDay);
-      let currentTemp = this.convertTemp(currentWeather.main.temp);
-      let highTemp = this.convertTemp(currentWeather.main.temp_max);
-      let lowTemp = this.convertTemp(currentWeather.main.temp_min);
+      let formattedDate = this.formatDate(weatherDay);
+      let weekday = this.getDayString(weatherDay);
 
-      let newCurrentWeather = {
-        id: currentWeather.dt,
-        date: currentWeatherDay,
+      // save temperature as kelvin in forecastList
+      // in render then convert the temperature unit
+      // don't need to save weather data in state
+      let currentTemp = this.convertKelvinToUnit(weather.main.temp, this.state.tempUnit);
+      let highTemp = this.convertKelvinToUnit(weather.main.temp_max, this.state.tempUnit);
+      let lowTemp = this.convertKelvinToUnit(weather.main.temp_min, this.state.tempUnit);
+
+      let newWeather = {
+        id: weather.dt,
+        date: weatherDay,
         dateStr: formattedDate,
         weekday: weekday,
-        group: currentWeather.weather[0].main,
+        group: weather.weather[0].main,
         description: formattedDescription,
         currentTemp: currentTemp,
         highTemp: highTemp,
         lowTemp: lowTemp,
-        humidity: currentWeather.main.humidity,
-        imageId: currentWeather.weather[0].icon,
-        windSpeed: currentWeather.wind.speed, // wind speed is in meters per sec
-        windDegrees: currentWeather.wind.deg
+        humidity: weather.main.humidity,
+        imageId: weather.weather[0].icon,
+        windSpeed: weather.wind.speed, // wind speed is in meters per sec
+        windDegrees: weather.wind.deg
       }
 
-      forecastList.push(newCurrentWeather);
-      dayToAddToForecastList += 1;
+      forecastList.push(newWeather);
+      nextDayToAddToForecastList += 1;
     }
 
     return forecastList;
@@ -266,9 +279,9 @@ class App extends Component {
     @return {string}
   */
   getWeatherRequestURL(city) {
-    let useApiKey = this.getRandomApiKey();
+    let ApiKey = this.getRandomApiKey();
     return (
-      `http://api.openweathermap.org/data/2.5/forecast?q=${city},us&appid=${useApiKey}`
+      `http://api.openweathermap.org/data/2.5/forecast?q=${city},us&appid=${ApiKey}`
     );
   }
 
@@ -293,7 +306,7 @@ class App extends Component {
 
         <main className="forecast-container">
           <div className="cityName">
-              Weather for { this.formatCityName(this.state.city) }
+              Weather for { this.formatLocationName(this.state.city) }
           </div>
           <div className="forecast-info-container">
             <ForecastDetail
