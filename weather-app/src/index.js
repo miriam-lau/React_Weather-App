@@ -8,13 +8,17 @@ import ForecastDetail from './components/forecast_detail';
 import TemperatureButton from './components/temperature_button';
 import { TEMP_UNIT } from './constants';
 
+/**
+*/
 const API_KEY = "7bdc76a23dde6b78698183d3a8bf49ec";
+
+/**
+*/
 const API_KEY2 = "41724c44a2967f32ad9b4f080620c0fb";
+
+/**
+*/
 const FIVE = 5;
-const WEEKDAYS = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday",
-    "Friday", "Saturday"];
-const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug",
-    "Sep", "Oct", "Nov", "Dec"];
 
 
 class App extends Component {
@@ -22,7 +26,8 @@ class App extends Component {
     super(props)
 
     this.state = {
-      weatherData: null, // {object data} in weather response
+      /** {object data} in weather response */
+      weatherData: null,
       forecastList: [], // an array of weather objects
       selectedDay: null, // day selected to display in forecastDetail component
       city: "", // location for weather data in format "city, country"
@@ -91,7 +96,7 @@ class App extends Component {
     return {string} string with format "month day year"
   */
   formatDate(date) {
-    let month = MONTHS[date.getMonth()];
+    let month = date.toLocaleDateString("en-US", { month: "short" });
     let day = date.getDate();
     let year = date.getFullYear();
 
@@ -113,7 +118,7 @@ class App extends Component {
           return "Today";
     }
 
-    return WEEKDAYS[date.getDay()];
+    return date.toLocaleDateString("en-US", { weekday: "short" });
   }
 
   /*
