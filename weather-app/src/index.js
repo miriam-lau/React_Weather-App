@@ -10,11 +10,8 @@ import { TEMP_UNIT } from './constants';
 
 /**
 */
-const API_KEY = "7bdc76a23dde6b78698183d3a8bf49ec";
-
-/**
-*/
-const API_KEY2 = "41724c44a2967f32ad9b4f080620c0fb";
+const API_KEY = ["7bdc76a23dde6b78698183d3a8bf49ec",
+    "41724c44a2967f32ad9b4f080620c0fb"];
 
 /**
 */
@@ -28,9 +25,13 @@ class App extends Component {
     this.state = {
       /** {object data} in weather response */
       weatherData: null,
+      /** */
       forecastList: [], // an array of weather objects
+      /** */
       selectedDay: null, // day selected to display in forecastDetail component
+      /** */
       city: "", // location for weather data in format "city, country"
+      /** */
       tempUnit: TEMP_UNIT.FAHRENHEIT, // temp unit to convert temperature to,
         // either 'F' or 'C'
     };
@@ -66,11 +67,16 @@ class App extends Component {
       navigator.geolocation.getCurrentPosition((position) => {
         let clientLatitude = position.coords.latitude;
         let clientLongtitude = position.coords.longitude;
+        let useAPI_KEYIndex = this.getAPI_KEYIndex();
 
-        let weatherRequestURL = `http://api.openweathermap.org/data/2.5/forecast?lat=${clientLatitude}&lon=${clientLongtitude}&appid=${API_KEY}`;
+        let weatherRequestURL = `http://api.openweathermap.org/data/2.5/forecast?lat=${clientLatitude}&lon=${clientLongtitude}&appid=${API_KEY[useAPI_KEYIndex]}`;
         this.fetchForecast(weatherRequestURL);
       });
     }
+  }
+
+  getAPI_KEYIndex() {
+    return (Math.floor(Math.random() * (2 - 0)) + 0);
   }
 
   /*
@@ -259,8 +265,9 @@ class App extends Component {
     @return {string}
   */
   getWeatherRequestURL(city) {
+    let useAPI_KEYIndex = this.getAPI_KEYIndex();
     return (
-      `http://api.openweathermap.org/data/2.5/forecast?q=${city},us&appid=${API_KEY}`
+      `http://api.openweathermap.org/data/2.5/forecast?q=${city},us&appid=${API_KEY[useAPI_KEYIndex]}`
     );
   }
 
