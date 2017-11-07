@@ -29,7 +29,7 @@ class ForecastDetail extends Component {
     return {string | null}
   */
   getWindDirection(degrees) {
-    for (let i = 0; i < (CARDINAL_DIRECTIONS.length - 1); i++) {
+    for (let i = 0; i < (CARDINAL_DIRECTIONS.length); i++) {
       if (i === 0 && (degrees >= CARDINAL_DIRECTIONS[i][1] ||
           degrees < CARDINAL_DIRECTIONS[i + 1][1])) {
             return CARDINAL_DIRECTIONS[i][0];
@@ -42,6 +42,11 @@ class ForecastDetail extends Component {
     }
     return null;
   }
+  // normal convert 11 degrees to 'N'
+  // normal convert 350 to degrees to 'N'
+  // normal convert 45.1 degrees to "NE"
+  // if degress < 0 should fail
+  // if degrees > 360 should fail
 
   render() {
     let info = this.props.selectedWeather;

@@ -19,7 +19,7 @@ const API_KEYS = ["7bdc76a23dde6b78698183d3a8bf49ec",
 */
 const NUM_DAYS_TO_DISPLAY = 5;
 
-
+// change api
 class App extends Component {
   constructor(props) {
     super(props)
@@ -92,6 +92,10 @@ class App extends Component {
     * @return {?int}
   */
   convertKelvinToUnit(kelvin, unit) {
+    if (kelvin < 273.15) {
+      return null;
+    }
+
     let celsiusTemperature = kelvin - 273.15;
     switch (unit) {
       case TEMP_UNIT.CELSIUS:
@@ -102,6 +106,9 @@ class App extends Component {
         return null;
     }
   }
+  // kelvin < 273.15, set kelvin to 100 and unit to C
+  // normal: k: 500 unit C
+  // normal: k: 300 unit F
 
   /**
     * Takes date object and parses together the month, day and year.
@@ -115,6 +122,7 @@ class App extends Component {
 
     return (`${month} ${day}, ${year}`);
   }
+  // normal: October 12, 2017 date object
 
   /**
     * Get the day of the week.
@@ -133,6 +141,9 @@ class App extends Component {
 
     return date.toLocaleDateString("en-US", { weekday: "short" });
   }
+  // normal: October 15, 2017
+  // how to mock date object
+  // today = new Date() returns "Today"
 
   /**
     * Capitalize the first letter of each word in the array.
@@ -151,13 +162,22 @@ class App extends Component {
     }
     return result.join(" ");
   }
+  // normal: "broken clouds" returns "Broken Clouds"
+  // if arr.length = 1
+  // if arr has an "" arr has 2 strings and "" is the middle one.
+  // if arr is empty
+  // if 1st char was a number
 
   /**
-    * Capitalize the first letter of the city and both letters of the country.
+    * change comment write out acceptable formats Capitalize the first letter of the city and both letters of the country.
     * @param {string location} city, country
     * @return {string} city, country
   */
   formatLocationName(location) {
+    // split on comma first
+    // verify format of location string
+    // error check before split city string on " "
+
     let words = location.split(" ");
     let city = words.slice(0, (words.length - 1));
     let formattedCity = this.capitalizeFirstLetters(city);
@@ -165,6 +185,13 @@ class App extends Component {
 
     return `${formattedCity} ${country}`;
   }
+  // normal: sunnyvale, us returns "San Francisco, US"
+  // if city name is more than one word
+  // if enter "Sunnyvale, California" should return "Sunnyvale, CALIFORNIA"
+  // if location is ""
+  // if location is one word
+  // if location is not a word, ie. num or "Sunnyvale, , US"
+  // if there is no comma it should fail
 
   /**
     * Convert weather data response into objects for forecast list.
@@ -180,9 +207,7 @@ class App extends Component {
         break;
       }
 
-      // should get the weather for the entire day if possible for future days
-      // if not possible then report same time for all future days and display
-      //  the time you chose.
+      // grab noon for each one.
       let weather = weatherData[i];
       let weatherDay = new Date(`${weather.dt_txt} UTC`);
       if (weatherDay.getDate() !== nextDayToAddToForecastList) {
