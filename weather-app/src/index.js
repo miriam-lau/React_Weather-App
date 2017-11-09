@@ -11,31 +11,33 @@ import { TEMP_UNIT } from './constants';
 let moment = require('moment-timezone');
 
 /**
+  * OpenWeatherMap API keys.
+  * @param {string[]} api key
 */
 const API_KEYS = ["7bdc76a23dde6b78698183d3a8bf49ec",
     "41724c44a2967f32ad9b4f080620c0fb"];
 
 /**
+  * Number of forecast list items.
 */
 const NUM_DAYS_TO_DISPLAY = 5;
 
-// change api
+
 class App extends Component {
   constructor(props) {
     super(props)
 
     this.state = {
-      /** @type {?object data} in weather response */
+      /** @type {?object} weather response data */
       weatherData: null,
-      /** @type {array} weather objects */
+      /** @type {object[]} weather objects */
       forecastList: [],
-      /** */
-      selectedDay: null, // day selected to display in forecastDetail component
-      /** */
-      city: "", // location for weather data in format "city, country"
-      /** */
-      tempUnit: TEMP_UNIT.FAHRENHEIT, // temp unit to convert temperature to,
-        // either 'F' or 'C'
+      /** @type {object} day selected to display in forecastDetail component */
+      selectedDay: null,
+      /** @type {string} location in format "city, country" */
+      location: "",
+      /** @type {char} current temp unit either 'F' or 'C' */
+      tempUnit: TEMP_UNIT.FAHRENHEIT,
     };
   }
 
@@ -78,7 +80,7 @@ class App extends Component {
 
   /**
     * Get the Api Key.
-    * @return {string API_KEYS[index]}
+    * @return {string} api key
   */
   getRandomApiKey() {
     let index = Math.floor(Math.random() * 2);
@@ -87,8 +89,8 @@ class App extends Component {
 
   /**
     * Converts temperature in Kelvin to current temperature unit.
-    * @param {int kelvin} temperature in Kelvin.
-    * @param {enum TEMP_UNIT} temperature unit in current state.
+    * @param {float} kelvin - temperature in Kelvin
+    * @param {enum} TEMP_UNIT - temperature unit in current state
     * @return {?int}
   */
   convertKelvinToUnit(kelvin, unit) {
@@ -106,13 +108,10 @@ class App extends Component {
         return null;
     }
   }
-  // kelvin < 273.15, set kelvin to 100 and unit to C
-  // normal: k: 500 unit C
-  // normal: k: 300 unit F
 
   /**
     * Takes date object and parses together the month, day and year.
-    * @param {object date} the date
+    * @param {object} date
     * @return {string} the date in format "month day year"
   */
   formatDate(date) {
@@ -122,32 +121,25 @@ class App extends Component {
 
     return (`${month} ${day}, ${year}`);
   }
-  // normal: October 12, 2017 date object
 
   /**
     * Get the day of the week.
-    * @param {object date} the date
+    * @param {object} date
     * @return {string} day of week
   */
   getDayString(date) {
     let today = new Date();
 
-    // get date within JS probably a function for this
-    if (date.getMonth() === today.getMonth() &&
-        date.getDate() === today.getDate() &&
-        date.getFullYear() === today.getFullYear()) {
-          return "Today";
+    if (date.toLocaleDateString("en-US") === today.toLocaleDateString("en-US")) {
+      return "Today";
     }
 
     return date.toLocaleDateString("en-US", { weekday: "short" });
   }
-  // normal: October 15, 2017
-  // how to mock date object
-  // today = new Date() returns "Today"
 
   /**
     * Capitalize the first letter of each word in the array.
-    * @param {array words} an array of words
+    * @param {string[]} words
     * @return {string}
   */
   capitalizeFirstLetters(words) {
@@ -162,15 +154,10 @@ class App extends Component {
     }
     return result.join(" ");
   }
-  // normal: "broken clouds" returns "Broken Clouds"
-  // if arr.length = 1
-  // if arr has an "" arr has 2 strings and "" is the middle one.
-  // if arr is empty
-  // if 1st char was a number
 
   /**
-    * change comment write out acceptable formats Capitalize the first letter of the city and both letters of the country.
-    * @param {string location} city, country
+    * Capitalize the first letter of each word in the city and all letters of the country.
+    * @param {string} location - format received from openweathermap api is "city, country"
     * @return {string} city, country
   */
   formatLocationName(location) {
@@ -185,33 +172,51 @@ class App extends Component {
 
     return `${formattedCity} ${country}`;
   }
-  // normal: sunnyvale, us returns "San Francisco, US"
-  // if city name is more than one word
-  // if enter "Sunnyvale, California" should return "Sunnyvale, CALIFORNIA"
-  // if location is ""
-  // if location is one word
-  // if location is not a word, ie. num or "Sunnyvale, , US"
-  // if there is no comma it should fail
+
+  /**
+    * Checks if time is a valid time.
+    * @param {string} time
+    * @return {boolean}
+  */
+  checkValidTimesToAddToForecastList(time) {
+    let validTimes = ["11:00 AM", "11:30 AM", "12:00 PM",
+        "12:30 PM", "1:00 PM", "1:30 PM"];
+    for (let i = 0; i < validTimes.length; i++) {
+      if (time === validTimes[i]) {
+        return true;
+      }
+    }
+    return false;
+  }
 
   /**
     * Convert weather data response into objects for forecast list.
-    * @param {object weather} weather data
-    * @return {array forecastList{objects weather}} an array of weather objects
+    * @param {object} weather data
+    * @return {object[]} forecastList - an array of weather objects
   */
   convertToForecastList(weatherData) {
     let forecastList = [];
-
     let nextDayToAddToForecastList = new Date(`${weatherData[0].dt_txt} UTC`).getDate();
+
     for (let i = 0; i < weatherData.length; i++) {
       if (forecastList.length === NUM_DAYS_TO_DISPLAY) {
         break;
       }
 
-      // grab noon for each one.
       let weather = weatherData[i];
       let weatherDay = new Date(`${weather.dt_txt} UTC`);
+      let time = weatherDay.toLocaleTimeString("en-US",
+          { hour12: true, hour: "numeric", minute: "numeric" });
+
       if (weatherDay.getDate() !== nextDayToAddToForecastList) {
         continue;
+      }
+
+      if (forecastList.length !== 0) {
+        if (weatherDay.getDate() !== nextDayToAddToForecastList ||
+            this.checkValidTimesToAddToForecastList(time) === false) {
+          continue;
+        }
       }
 
       let description = weather.weather[0].description;
@@ -224,19 +229,16 @@ class App extends Component {
       // in render then convert the temperature unit
       // don't need to save weather data in state
       let currentTemp = this.convertKelvinToUnit(weather.main.temp, this.state.tempUnit);
-      let highTemp = this.convertKelvinToUnit(weather.main.temp_max, this.state.tempUnit);
-      let lowTemp = this.convertKelvinToUnit(weather.main.temp_min, this.state.tempUnit);
 
       let newWeather = {
         id: weather.dt,
         date: weatherDay,
         dateStr: formattedDate,
         weekday: weekday,
+        time: time,
         group: weather.weather[0].main,
         description: formattedDescription,
         currentTemp: currentTemp,
-        highTemp: highTemp,
-        lowTemp: lowTemp,
         humidity: weather.main.humidity,
         imageId: weather.weather[0].icon,
         windSpeed: weather.wind.speed, // wind speed is in meters per sec
@@ -250,7 +252,7 @@ class App extends Component {
     return forecastList;
   }
 
-  /*
+  /* update comment
   Updates state properties:
     "tempUnit" with new temperature unit
     "forecastList" with result from calling convertToForecastList function passing
@@ -273,9 +275,9 @@ class App extends Component {
     });
   }
 
-  /*
-    API call to fetch weather data
-    @param {string weatherURLRequest} URL request
+  /**
+    * API call to fetch weather data.
+    * @param {string} weatherURLRequest
   */
   fetchForecast(weatherURLRequest) {
     fetch(weatherURLRequest).then(response => {
@@ -290,7 +292,7 @@ class App extends Component {
           weatherData: data.list,
           forecastList: forecastList,
           selectedDay: forecastList[0],
-          city: `${data.city.name}, ${data.city.country}`
+          location: `${data.city.name}, ${data.city.country}`
         });
       });
     }).catch(err => {
@@ -298,15 +300,15 @@ class App extends Component {
     });
   }
 
-  /*
-    Creates the url request string.
-    @param {string city} city, country
-    @return {string}
+  /**
+    * Creates the url request string.
+    * @param {string} location - format "city, country"
+    * @return {string}
   */
-  getWeatherRequestURL(city) {
+  getWeatherRequestURL(location) {
     let ApiKey = this.getRandomApiKey();
     return (
-      `http://api.openweathermap.org/data/2.5/forecast?q=${city},us&appid=${ApiKey}`
+      `http://api.openweathermap.org/data/2.5/forecast?q=${location},us&appid=${ApiKey}`
     );
   }
 
@@ -318,20 +320,24 @@ class App extends Component {
               src="/weather_favicon.png"
               alt="weather-icon" />
           <section className="search-bar-container">
-            <article>Enter a City:</article>
+            <article>Enter a Location:</article>
             <SearchBar
-                onSearchCityChange={ city => {
-                  this.fetchForecast(this.getWeatherRequestURL(city))
+                onSearchLocationChange={ location => {
+                  this.fetchForecast(this.getWeatherRequestURL(location))
                 }} />
+            <TemperatureButton
+              currentTempUnit={ this.state.tempUnit }
+              onTempUnitChange={ unit => this.handleTempUnitChange(unit) }
+            />
           </section>
-          <TemperatureButton
-            currentTempUnit={ this.state.tempUnit }
-            onTempUnitChange={ unit => this.handleTempUnitChange(unit) }/>
+          <a href="http://openweathermap.org/">
+            <img src="/open_weather_map_logo.png" alt="Open Weather Map Logo" />
+          </a>
         </header>
 
         <main className="forecast-container">
-          <div className="cityName">
-              Weather for { this.formatLocationName(this.state.city) }
+          <div className="location-name">
+              Weather for { this.formatLocationName(this.state.location) }
           </div>
           <div className="forecast-info-container">
             <ForecastDetail
@@ -344,9 +350,14 @@ class App extends Component {
                 tempUnit={ this.state.tempUnit }
                 onDaySelect={ selectedDay => this.setState({ selectedDay }) }
               />
+              <article className="forecast-summary-note">
+                Future forecasts display weather between 11 AM and 2 PM local time.
+              </article>
             </section>
           </div>
         </main>
+        <footer>
+        </footer>
       </div>
     );
   }

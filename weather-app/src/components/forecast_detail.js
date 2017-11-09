@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 
-/*
-  List of cardinal directions and their starting degree values.
+/**
+  * List of cardinal directions and their starting degree values.
 */
 const CARDINAL_DIRECTIONS = [
   ['N', 348.75],
@@ -23,10 +23,10 @@ const CARDINAL_DIRECTIONS = [
 ]
 
 class ForecastDetail extends Component {
-  /*
-    Converts the degrees to a cardinal direction.
-    @param {float degrees} wind degrees
-    return {string | null}
+  /**
+    * Converts the degrees to a cardinal direction.
+    * @param {float} degres
+    * @return {?string}
   */
   getWindDirection(degrees) {
     for (let i = 0; i < (CARDINAL_DIRECTIONS.length); i++) {
@@ -42,11 +42,6 @@ class ForecastDetail extends Component {
     }
     return null;
   }
-  // normal convert 11 degrees to 'N'
-  // normal convert 350 to degrees to 'N'
-  // normal convert 45.1 degrees to "NE"
-  // if degress < 0 should fail
-  // if degrees > 360 should fail
 
   render() {
     let info = this.props.selectedWeather;
@@ -59,27 +54,23 @@ class ForecastDetail extends Component {
 
     return (
       <div className="forecast-detail">
-        <section className="forecast-detail-date">
-          <article>{ info.weekday }</article>
-          <article>{ info.dateStr }</article>
+        <section className="forecast-detail-day">
+          <ul>
+            <li>{ info.weekday }</li>
+            <li>{ info.dateStr }</li>
+            <li>{ info.time }</li>
+          </ul>
         </section>
-        <div className="forecast-detail-panel-container">
-          <section className="forecast-detail-left-panel">
-            <img className="forecast-detail-img" src={ image } alt={info.group}/>
-            <article>{ info.description }</article>
-            <article>Current Temperature</article>
-            <article>{ info.currentTemp } &deg;{ this.props.tempUnit }</article>
-          </section>
-          <section className="forecast-detail-right-panel">
-            <ul>
-              <li>Highs: { info.highTemp } &deg;{ this.props.tempUnit }</li>
-              <li>Lows: { info.lowTemp } &deg;{ this.props.tempUnit }</li>
-              <li>Humidity: { info.humidity }&#37;</li>
-              <li>Wind Speed: { info.windSpeed } m/s</li>
-              <li>Wind Direction: { this.getWindDirection(info.windDegrees) }</li>
-            </ul>
-          </section>
-        </div>
+        <section className="forecast-detail-panel">
+          <img className="forecast-detail-img" src={ image } alt={info.group}/>
+          <ul>
+            <li>{ info.description }</li>
+            <li>Temperature: { info.currentTemp } &deg;{ this.props.tempUnit }</li>
+            <li>Humidity: { info.humidity }&#37;</li>
+            <li>Wind Speed: { info.windSpeed } m/s</li>
+            <li>Wind Direction: { this.getWindDirection(info.windDegrees) }</li>
+          </ul>
+        </section>
       </div>
     );
   }

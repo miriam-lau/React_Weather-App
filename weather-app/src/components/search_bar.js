@@ -4,17 +4,17 @@ class SearchBar extends Component {
   constructor(props) {
     super(props)
 
-    this.state = { city: "" };
+    this.state = { location: "" };
   }
 
-  /*
-    Passes the city name in state to the onSearchCityChange function.
-    @param {event} object
-    return {null}
+  /**
+    * Passes the location to the onSearchLocationChange function.
+    * @param {event} object
+    * @return {null}
   */
   handleSubmit(event) {
     event.preventDefault();
-    this.props.onSearchCityChange(this.state.city);
+    this.props.onSearchLocationChange(this.state.location);
     return null;
   }
 
@@ -22,8 +22,8 @@ class SearchBar extends Component {
     return (
       <form onSubmit={ event => this.handleSubmit(event) }>
         <input
-          value={ this.state.city }
-          onChange={ event => this.setState({ city: event.target.value }) } />
+          value={ this.state.location }
+          onChange={ event => this.setState({ location: event.target.value }) } />
       </form>
     );
   }
