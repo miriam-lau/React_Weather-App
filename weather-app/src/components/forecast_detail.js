@@ -1,4 +1,5 @@
 import React, { Component } from 'react';
+import { convertKelvinToUnit } from '../convert_temperature';
 
 /**
   * List of cardinal directions and their starting degree values.
@@ -25,7 +26,7 @@ const CARDINAL_DIRECTIONS = [
 class ForecastDetail extends Component {
   /**
     * Converts the degrees to a cardinal direction.
-    * @param {float} degres
+    * @param {float} degrees
     * @return {?string}
   */
   getWindDirection(degrees) {
@@ -50,6 +51,7 @@ class ForecastDetail extends Component {
       return <div className="forecast-detail-loading">Loading...</div>
     }
 
+    let temperature = convertKelvinToUnit(info.temperature, this.props.temperatureUnit);
     let image = `/images/${info.imageId}.png`;
 
     return (
@@ -65,7 +67,7 @@ class ForecastDetail extends Component {
           <img className="forecast-detail-img" src={ image } alt={info.group}/>
           <ul>
             <li>{ info.description }</li>
-            <li>Temperature: { info.currentTemp } &deg;{ this.props.tempUnit }</li>
+            <li>Temperature: { temperature } &deg;{ this.props.temperatureUnit }</li>
             <li>Humidity: { info.humidity }&#37;</li>
             <li>Wind Speed: { info.windSpeed } m/s</li>
             <li>Wind Direction: { this.getWindDirection(info.windDegrees) }</li>

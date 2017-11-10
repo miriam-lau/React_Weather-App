@@ -1,15 +1,17 @@
 import React from 'react';
+import { convertKelvinToUnit } from '../convert_temperature';
 
 /**
   * Returns a ForecastListItem component.
   * @param {props}
-  * @param {char} props.tempUnit - temperature unit, either 'F' or 'C'
+  * @param {char} props.temperatureUnit - temperature unit, either 'F' or 'C'
   * @param {object} props.weather
   * @param {function} props.onDaySelect - on click passes weather to the function
   * @return {html element} div - ForecastListItem
 */
 const ForecastListItem = (props) => {
   let info = props.weather;
+  let temperature = convertKelvinToUnit(props.weather.temperature, props.temperatureUnit);
   let image = `/images/${info.imageId}.png`;
 
   return (
@@ -20,7 +22,7 @@ const ForecastListItem = (props) => {
         <img className="forecast-list-item-img" src={ image } alt={info.group}/>
       </div>
       <section className="forecast-list-item-description">{ info.description }</section>
-      <section>{ info.currentTemp } &deg;{ props.tempUnit }</section>
+      <section>{ temperature } &deg;{ props.temperatureUnit }</section>
     </div>
   );
 }

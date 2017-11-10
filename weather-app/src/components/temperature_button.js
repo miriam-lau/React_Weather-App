@@ -1,23 +1,22 @@
 import React from 'react';
-import { TEMP_UNIT } from '../constants';
+import { TEMPERATURE_UNITS } from '../constants';
 
-/*
-  Renders either the 'F' or 'C' temperature button.
-  @param {props}
-    {char} the current temperature unit, either 'F' or 'C'
-    {function onTempUnitChange} passes the new temperature unit to the
-      handleTempUnitChange function in index
+/**
+  * Renders either the 'F' or 'C' temperature button.
+  * @param {props}
+  * @param {char} props.currentTemperatureUnit - 'F' or 'C'
+  * @param {function} onTemperatureUnitChange - passes the new temperature unit
+      to the function
 */
 const TemperatureButton = (props) => {
-  let currentTempUnit = props.currentTempUnit;
-
-  let newTemp = (currentTempUnit === TEMP_UNIT.FAHRENHEIT) ?
-    TEMP_UNIT.CELSIUS : TEMP_UNIT.FAHRENHEIT;
+  let newTemperature =
+      (props.currentTemperatureUnit === TEMPERATURE_UNITS.FAHRENHEIT) ?
+          TEMPERATURE_UNITS.CELSIUS : TEMPERATURE_UNITS.FAHRENHEIT;
 
   return (
     <div className="temperature-button"
-      onClick={ () => props.onTempUnitChange(newTemp) }>
-        &deg;{ newTemp }
+      onClick={ () => props.onTemperatureUnitChange(newTemperature) }>
+        &deg;{ newTemperature }
     </div>
   );
 }

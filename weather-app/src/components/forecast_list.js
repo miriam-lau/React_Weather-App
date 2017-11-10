@@ -5,7 +5,7 @@ import ForecastListItem from './forecast_list_item';
   * Returns a ForecastListItem.
   * @param {props}
   * @param {object[]} props.forecastList - an array of weather objects
-  * @param {char} props.tempUnit - temperature unit, either 'F' or 'C'
+  * @param {char} props.temperatureUnit - temperature unit, either 'F' or 'C'
   * @param {function} props.onDaySelect - sets the state of selectedDay
   @return {component} ForecastListItem component
 */
@@ -16,7 +16,7 @@ const ForecastList = (props) => {
         return (
           <ForecastListItem
             key={ weather.id }
-            tempUnit={ props.tempUnit }
+            temperatureUnit={ props.temperatureUnit }
             weather={ weather }
             onDaySelect={ props.onDaySelect }
           />

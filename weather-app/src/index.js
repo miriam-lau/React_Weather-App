@@ -6,7 +6,7 @@ import SearchBar from './components/search_bar';
 import ForecastList from './components/forecast_list';
 import ForecastDetail from './components/forecast_detail';
 import TemperatureButton from './components/temperature_button';
-import { TEMP_UNIT } from './constants';
+import { TEMPERATURE_UNITS } from './constants';
 
 let moment = require('moment-timezone');
 
@@ -28,16 +28,16 @@ class App extends Component {
     super(props)
 
     this.state = {
-      /** @type {?object} weather response data */
-      weatherData: null,
       /** @type {object[]} weather objects */
       forecastList: [],
       /** @type {object} day selected to display in forecastDetail component */
       selectedDay: null,
-      /** @type {string} location in format "city, country" */
-      location: "",
-      /** @type {char} current temp unit either 'F' or 'C' */
-      tempUnit: TEMP_UNIT.FAHRENHEIT,
+      /** @type {string} city name */
+      cityName: "",
+      /** @type {string} city country */
+      cityCountry: "",
+      /** @type {char} current temperature unit either 'F' or 'C' */
+      temperatureUnit: TEMPERATURE_UNITS.FAHRENHEIT,
     };
   }
 
@@ -88,28 +88,6 @@ class App extends Component {
   }
 
   /**
-    * Converts temperature in Kelvin to current temperature unit.
-    * @param {float} kelvin - temperature in Kelvin
-    * @param {enum} TEMP_UNIT - temperature unit in current state
-    * @return {?int}
-  */
-  convertKelvinToUnit(kelvin, unit) {
-    if (kelvin < 273.15) {
-      return null;
-    }
-
-    let celsiusTemperature = kelvin - 273.15;
-    switch (unit) {
-      case TEMP_UNIT.CELSIUS:
-        return Math.round(celsiusTemperature);
-      case TEMP_UNIT.FAHRENHEIT:
-        return Math.round(((celsiusTemperature * 9) / 5) + 32);
-      default:
-        return null;
-    }
-  }
-
-  /**
     * Takes date object and parses together the month, day and year.
     * @param {object} date
     * @return {string} the date in format "month day year"
@@ -146,9 +124,10 @@ class App extends Component {
     let result = [];
 
     for (let i = 0; i < words.length; i++) {
-      // need to do a check for an "" here because if there is an a double space
-      // it will crash when it does the uppercase for the char at 0.
-      // need to make sure word is at least length 1 here.
+      if (words[i].length < 1) {
+        continue;
+      }
+
       let currentFirstChar = words[i].charAt(0).toUpperCase();
       result.push(currentFirstChar + words[i].slice(1));
     }
@@ -157,20 +136,26 @@ class App extends Component {
 
   /**
     * Capitalize the first letter of each word in the city and all letters of the country.
-    * @param {string} location - format received from openweathermap api is "city, country"
+    * @param {string} name of city
+    * @param {string} country
     * @return {string} city, country
   */
-  formatLocationName(location) {
-    // split on comma first
-    // verify format of location string
-    // error check before split city string on " "
+  formatLocationName(name, country) {
+    let formattedCity;
+    let formattedCountry;
 
-    let words = location.split(" ");
-    let city = words.slice(0, (words.length - 1));
-    let formattedCity = this.capitalizeFirstLetters(city);
-    let country = words[(words.length - 1)].toUpperCase();
+    if (name.length < 1) {
+      formattedCity = "ERROR";
+    }
 
-    return `${formattedCity} ${country}`;
+    if (country.length < 1) {
+      formattedCountry = "ERROR";
+    }
+
+    formattedCity = this.capitalizeFirstLetters(name.split(" "));
+    formattedCountry = country.toUpperCase();
+
+    return `${formattedCity}, ${formattedCountry}`;
   }
 
   /**
@@ -221,14 +206,8 @@ class App extends Component {
 
       let description = weather.weather[0].description;
       let formattedDescription = this.capitalizeFirstLetters(description.split(" "));
-
       let formattedDate = this.formatDate(weatherDay);
       let weekday = this.getDayString(weatherDay);
-
-      // save temperature as kelvin in forecastList
-      // in render then convert the temperature unit
-      // don't need to save weather data in state
-      let currentTemp = this.convertKelvinToUnit(weather.main.temp, this.state.tempUnit);
 
       let newWeather = {
         id: weather.dt,
@@ -238,10 +217,11 @@ class App extends Component {
         time: time,
         group: weather.weather[0].main,
         description: formattedDescription,
-        currentTemp: currentTemp,
+        temperature: weather.main.temp,
         humidity: weather.main.humidity,
         imageId: weather.weather[0].icon,
-        windSpeed: weather.wind.speed, // wind speed is in meters per sec
+        /** wind speed is in meters per sec */
+        windSpeed: weather.wind.speed,
         windDegrees: weather.wind.deg
       }
 
@@ -252,27 +232,13 @@ class App extends Component {
     return forecastList;
   }
 
-  /* update comment
-  Updates state properties:
-    "tempUnit" with new temperature unit
-    "forecastList" with result from calling convertToForecastList function passing
-      in the weather data
-    "selectedDay" with a new object with the same id in the new forecastList
-  @param {char} 'F' or 'C'
+  /**
+    * Updates state with the new temperature unit.
+    * @param {char} unit - either 'F' or 'C'
   */
-  handleTempUnitChange(unit) {
-    this.setState({ tempUnit: unit }, () => {
-      this.setState({ forecastList: this.convertToForecastList(this.state.weatherData) },
-        () => {
-          let forecastList = this.state.forecastList;
-          for (let i = 0; i < forecastList.length; i++) {
-            if (forecastList[i].id === this.state.selectedDay.id) {
-              this.setState({ selectedDay: forecastList[i] });
-            }
-          }
-        }
-      );
-    });
+  handleTemperatureUnitChange(unit) {
+    this.setState({ temperatureUnit: unit });
+    return;
   }
 
   /**
@@ -289,10 +255,10 @@ class App extends Component {
         console.log("DATA", data);
         let forecastList = this.convertToForecastList(data.list);
         this.setState({
-          weatherData: data.list,
           forecastList: forecastList,
           selectedDay: forecastList[0],
-          location: `${data.city.name}, ${data.city.country}`
+          cityName: data.city.name,
+          cityCountry: data.city.country
         });
       });
     }).catch(err => {
@@ -307,6 +273,7 @@ class App extends Component {
   */
   getWeatherRequestURL(location) {
     let ApiKey = this.getRandomApiKey();
+    console.log("LOCATION", location);
     return (
       `http://api.openweathermap.org/data/2.5/forecast?q=${location},us&appid=${ApiKey}`
     );
@@ -326,8 +293,8 @@ class App extends Component {
                   this.fetchForecast(this.getWeatherRequestURL(location))
                 }} />
             <TemperatureButton
-              currentTempUnit={ this.state.tempUnit }
-              onTempUnitChange={ unit => this.handleTempUnitChange(unit) }
+              currentTemperatureUnit={ this.state.temperatureUnit }
+              onTemperatureUnitChange={ unit => this.handleTemperatureUnitChange(unit) }
             />
           </section>
           <a href="http://openweathermap.org/">
@@ -337,17 +304,18 @@ class App extends Component {
 
         <main className="forecast-container">
           <div className="location-name">
-              Weather for { this.formatLocationName(this.state.location) }
+              Weather for { this.formatLocationName(
+                  this.state.cityName, this.state.cityCountry) }
           </div>
           <div className="forecast-info-container">
             <ForecastDetail
-              tempUnit={ this.state.tempUnit }
+              temperatureUnit={ this.state.temperatureUnit }
               selectedWeather={ this.state.selectedDay }/>
             <section className="forecast-summary">
               <h2>5-Day Forecast</h2>
               <ForecastList
                 forecastList={ this.state.forecastList }
-                tempUnit={ this.state.tempUnit }
+                temperatureUnit={ this.state.temperatureUnit }
                 onDaySelect={ selectedDay => this.setState({ selectedDay }) }
               />
               <article className="forecast-summary-note">
